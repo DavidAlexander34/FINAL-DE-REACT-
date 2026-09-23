@@ -24,12 +24,30 @@ function Login() {
     setClave("");
   }
 
-  function cerrarSesion() {
-    if (window.confirm("¿Deseas cerrar tu sesión?")) {
+
+function cerrarSesion() {
+  Swal.fire({
+    icon: "warning",
+    title: "¿Deseas cerrar tu sesión?",
+    text: "Tendrás que iniciar sesión nuevamente.",
+    showCancelButton: true,
+    confirmButtonText: "Sí, cerrar sesión",
+    cancelButtonText: "Cancelar",
+    confirmButtonColor: "#0284c7",
+  }).then((resultado) => {
+    if (resultado.isConfirmed) {
       logout();
       setMostrarPerfil(false);
+
+      Swal.fire({
+        icon: "success",
+        title: "Sesión cerrada",
+        text: "Has cerrado sesión correctamente.",
+        confirmButtonColor: "#0284c7",
+      });
     }
-  }
+  });
+}
 
   if (user) {
     return (
