@@ -76,13 +76,14 @@ export function CartProvider({ children }) {
   };
 
   // Cálculos de montos
-  const subtotal = carrito.reduce(
-    (total, item) =>
-      total + (item.precio ?? item.precioCalculado ?? obtenerPrecio(item)) * (item.cantidad || 1),
+// Cálculos de montos (Precio con IVA incluido)
+  const total = carrito.reduce(
+    (acc, item) =>
+      acc + (item.precio ?? item.precioCalculado ?? obtenerPrecio(item)) * (item.cantidad || 1),
     0
   );
-  const iva = subtotal * 0.19;
-  const total = subtotal + iva;
+  const iva = total * 0.19; // O si es desglose real (19% sobre base): total - (total / 1.19)
+  const subtotal = total - iva;
   const totalItems = carrito.reduce((acc, item) => acc + item.cantidad, 0);
 
   // Nueva función handleSendCart con SweetAlert2
