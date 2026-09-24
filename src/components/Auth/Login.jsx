@@ -1,10 +1,8 @@
 import { useState } from "react";
 import { LogIn, LogOut, X } from "lucide-react";
 import Swal from "sweetalert2";
-
-
 import { useAuth } from "../../context/AuthContext";
-import fotoPerfil from "../../assets/perfil.png"; // Cambia esta ruta si tu imagen tiene otro nombre o formato
+import fotoPerfil from "../../assets/perfil.png"; 
 
 function Login() {
   const { user, login, logout } = useAuth();
