@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import Swal from "sweetalert2";
 
 const CartContext = createContext();
 const CLAVE_CARRITO = "carrito";
@@ -65,43 +66,68 @@ export function CartProvider({ children }) {
   };
 
   const updateQuantity = (productId, amount) => {
-    setCarrito((prevCart) => prevCart.flatMap((item) => {
-      if (item.id !== productId) return [item];
-      const cantidad = (item.cantidad || 1) + amount;
-      return cantidad > 0 ? [{ ...item, cantidad }] : [];
-    }));
+    setCarrito((prevCart) =>
+      prevCart.flatMap((item) => {
+        if (item.id !== productId) return [item];
+        const cantidad = (item.cantidad || 1) + amount;
+        return cantidad > 0 ? [{ ...item, cantidad }] : [];
+      })
+    );
   };
 
-  const handleSendCart = () => {
-    if (carrito.length === 0) {
-      setOrderMessage({ type: 'error', text: 'No puedes enviar un carrito vacío.' });
-      return;
-    }
-
-    if (!window.confirm('¿Deseas confirmar y enviar este pedido?')) {
-      setOrderMessage({ type: 'error', text: 'El envío del pedido fue cancelado.' });
-      return;
-    }
-
-    setOrderMessage({ type: 'success', text: 'Pedido enviado con éxito.' });
-    setCarrito([]);
-  };
-
+  // Cálculos de montos
   const subtotal = carrito.reduce(
-    (total, item) => total + (item.precio ?? item.precioCalculado ?? obtenerPrecio(item)) * (item.cantidad || 1),
+    (total, item) =>
+      total + (item.precio ?? item.precioCalculado ?? obtenerPrecio(item)) * (item.cantidad || 1),
     0
   );
   const iva = subtotal * 0.19;
   const total = subtotal + iva;
   const totalItems = carrito.reduce((acc, item) => acc + item.cantidad, 0);
 
+  // Nueva función handleSendCart con SweetAlert2
+  const handleSendCart = () => {
+    if (carrito.length === 0) {
+      Swal.fire({
+        icon: "warning",
+        title: "Carrito vacío",
+        text: "Agrega al menos un producto antes de enviar el pedido.",
+        confirmButtonColor: "#0284c7",
+      });
+      return;
+    }
+
+    Swal.fire({
+      title: "¿Enviar pedido?",
+      text: `El total de tu pedido es $${total.toLocaleString("es-CO")} COP`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Sí, enviar pedido",
+      cancelButtonText: "Cancelar",
+      confirmButtonColor: "#10b981",
+      cancelButtonColor: "#ef4444",
+    }).then((resultado) => {
+      if (resultado.isConfirmed) {
+        setCarrito([]);
+        localStorage.removeItem(CLAVE_CARRITO);
+
+        Swal.fire({
+          icon: "success",
+          title: "¡Pedido enviado!",
+          text: "Tu pedido fue enviado correctamente.",
+          confirmButtonColor: "#0284c7",
+        });
+      }
+    });
+  };
+
   return (
     <CartContext.Provider
       value={{
         carrito,
+        cart: carrito,
         totalItems,
         agregarAlCarrito,
-        cart: carrito,
         orderMessage,
         obtenerPrecio,
         handleAddToCart,
